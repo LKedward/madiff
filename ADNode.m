@@ -19,6 +19,10 @@
 %      mtimes
 %   - Added overload for left matrix divide (A\b):
 %      mldivide, mldivide_backprop
+%   - Added overload for transpose operator (A'):
+%      ctranspose
+%
+% 
 classdef ADNode < handle
 %% Node in the function evalution graph
     
@@ -366,7 +370,11 @@ classdef ADNode < handle
                 y = size(adn.value, dim);
             end
         end
-
+        
+        function y = ctranspose(x)
+            y = ADNode(x.value', x.root, @(y) x.add( y.grad' ));
+        end
+        
 % eq
 % ge
 % gt
