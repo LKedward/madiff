@@ -1,4 +1,5 @@
 %% MATLAB Automatic Differentiation Node
+%
 %  Object-oriented reverse mode automatic differentiation.
 %  Modified for use here, originally available (04/2017) from:
 %   https://github.com/gaika/madiff
@@ -14,6 +15,8 @@
 %   March 2017
 %   - Added overload for the four-quadrant arctangent function:
 %      atan2, atan_backprop
+%   - Modified overload for mtimes to allow for non-square matrices:
+%      mtimes
 classdef ADNode < handle
 %% Node in the function evalution graph
     
@@ -184,10 +187,10 @@ classdef ADNode < handle
                 if isa(x2, 'ADNode')
                     y = ADNode(x1.value * x2.value, x1.root, @(y) y.mtimes_backprop(x1, x2));
                 else
-                    y = ADNode(x1.value * x2, x1.root, @(y) x1.add(bsxfun(@times, y.grad, x2)));
+                    y = ADNode(x1.value * x2, x1.root, @(y) x1.add( y.grad * x2'));
                 end
             else
-                y = ADNode(x1 * x2.value, x2.root, @(y) x2.add(bsxfun(@times, y.grad, x1)));
+                y = ADNode(x1 * x2.value, x2.root, @(y) x2.add( x1' * y.grad));
             end
         end
 
@@ -462,8 +465,8 @@ classdef ADNode < handle
         end
         
         function mtimes_backprop(y, x1, x2)
-            x1.add(bsxfun(@times, y.grad, x2.value));
-            x2.add(bsxfun(@times, y.grad, x1.value));
+            x1.add( y.grad * x2.value');
+            x2.add( x1.value' * y.grad);
         end
     
         function times_backprop(y, x1, x2)
