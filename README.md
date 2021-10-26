@@ -7,7 +7,7 @@ __Implements reverse-mode (adjoint) automatic differentiation using operator-ove
 __Forked from *github.com/gaika/madiff* since it is no-longer available there,
 including modifications needed for my own work.__
 
-
+__This repository is not under active development.__
 
 ### Example application
 
