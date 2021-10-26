@@ -1,5 +1,16 @@
 # MADiff: Matlab Automatic Differentiation (reverse mode, OO)
 
+[![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+
+__Implements reverse-mode (adjoint) automatic differentiation using operator-overloading in MATLAB.__
+
+__Forked from *github.com/gaika/madiff* since it is no-longer available there,
+including modifications needed for my own work.__
+
+
+
+### Example application
+
 For a matlab function like: 
 
     % banana function
