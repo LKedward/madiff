@@ -17,6 +17,8 @@
 %      atan2, atan_backprop
 %   - Modified overload for mtimes to allow for non-square matrices:
 %      mtimes
+%   - Added overload for left matrix divide (A\b):
+%      mldivide, mldivide_backprop
 classdef ADNode < handle
 %% Node in the function evalution graph
     
@@ -229,6 +231,18 @@ classdef ADNode < handle
                 end
             else
                 y = ADNode(x1 / x2.value, x2.root, @(y) x2.add(- y.grad .* x1 / x2.value .^ 2));
+            end
+        end
+        
+        function y = mldivide(x1, x2)
+            if isa(x1, 'ADNode')
+                if isa(x2, 'ADNode')
+                    y = ADNode(x1.value\x2.value, x1.root, @(y) y.mldivide_backprop(x1, x2));
+                else
+                    y = ADNode(x1.value\x2, x1.root, @(y) x1.add(y.grad .* ((x1.value^2)\eye(size(x1.value)) * x2) ) );
+                end
+            else
+                y = ADNode(x1\x2.value, x2.root, @(y) x2.add(y.grad .* (x1\y.grad) ) );
             end
         end
         
@@ -482,6 +496,14 @@ classdef ADNode < handle
         function mrdivide_backprop(y, x1, x2)
             x1.add(y.grad / x2.value);
             x2.add(-y.grad .* x1.value / x2.value .^ 2);
+        end
+        
+        function mldivide_backprop(y, x1, x2)
+            %x1.add(y.grad .* ((x1.value^2)\eye(size(x1.value)) * x2.value) );
+            %x2.add(y.grad .* (x1.value\y.grad) );
+            x1.add(-(x1.value')\(y.grad*y.value') );
+            x2.add(x1.value'\y.grad);
+            %disp('asdf');
         end
         
         function mpower_backprop(y, x1, x2)
