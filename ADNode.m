@@ -1,3 +1,19 @@
+%% MATLAB Automatic Differentiation Node
+%  Object-oriented reverse mode automatic differentiation.
+%  Modified for use here, originally available (04/2017) from:
+%   https://github.com/gaika/madiff
+%
+%  LICENSE NOTICE
+%  This file is distributed under the GNU General Public License (GPL)
+%  (See ADNode_LICENSE.txt)
+%
+%  The GNU GPL allows redistribution of the original program and modified
+%  versions thereof. In accordance with term 2.a of the GNU GPL this notice
+%  states the modifications made to the original program:
+%
+%   March 2017
+%   - Added overload for the four-quadrant arctangent function:
+%      atan2, atan_backprop
 classdef ADNode < handle
 %% Node in the function evalution graph
     
@@ -76,7 +92,11 @@ classdef ADNode < handle
         function y = atan(x)
             y = ADNode(atan(x.value), x.root, @(y) x.add(bsxfun(@rdivide, y.grad, (1+x.value.^2))));
         end
-
+        
+        function y = atan2(x1,x2)
+            y = ADNode(atan2(x1.value,x2.value), x1.root, @(y) y.atan2_backprop(x1, x2));
+        end
+        
         function y = cos(x)
             y = ADNode(cos(x.value), x.root, @(y) x.add(bsxfun(@times, -y.grad, sin(x.value))));
         end
@@ -435,7 +455,12 @@ classdef ADNode < handle
             x1.add(y.grad);
             x2.add(-y.grad);
         end
-    
+        
+        function atan2_backprop(y,x1,x2)
+            x1.add(y.grad .* x2.value ./ (x2.value.^2 + x1.value.^2));
+            x2.add(y.grad .* -x1.value ./ (x2.value.^2 + x1.value.^2));
+        end
+        
         function mtimes_backprop(y, x1, x2)
             x1.add(bsxfun(@times, y.grad, x2.value));
             x2.add(bsxfun(@times, y.grad, x1.value));
